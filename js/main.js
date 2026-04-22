@@ -10,7 +10,7 @@ const miniProgressPercent = document.getElementById('miniProgressPercent');
 const greeting = document.getElementById('greeting');
 const currentDate = document.getElementById('currentDate');
 const categorySelector = document.getElementById('categorySelector');
-const priorityBtns = document.querySelectorAll('.dot-btn');
+const priorityBtns = document.querySelectorAll('.p-pill');
 const navItems = document.querySelectorAll('.nav-item');
 const catItems = document.querySelectorAll('.cat-item');
 const themeToggleBtn = document.getElementById('themeToggle');
@@ -37,6 +37,12 @@ function init() {
     applyTheme();
     setupEventListeners();
     display();
+
+    // Update greeting and date automatically every minute
+    setInterval(() => {
+        updateGreeting();
+        updateDate();
+    }, 60000);
 }
 
 function setupEventListeners() {
@@ -122,8 +128,8 @@ function display() {
 
     const searchTerm = searchInput.value.toLowerCase();
     if (searchTerm) {
-        filteredTasks = filteredTasks.filter(t => 
-            t.text.toLowerCase().includes(searchTerm) || 
+        filteredTasks = filteredTasks.filter(t =>
+            t.text.toLowerCase().includes(searchTerm) ||
             t.category.toLowerCase().includes(searchTerm)
         );
     }
@@ -146,12 +152,12 @@ function renderTasks(tasks) {
     todoList.innerHTML = tasks.map((task, i) => {
         const index = allTasks.findIndex(t => t.id === task.id);
         const categoryIcon = getCategoryIcon(task.category);
-        
+
         return `
             <li class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${i * 0.08}s">
                 <div class="task-card-header">
                     <span class="task-category-tag">${categoryIcon} ${task.category}</span>
-                    <div class="task-priority-indicator ${task.priority}" title="${task.priority === 'high' ? 'Hard' : task.priority === 'medium' ? 'Medium' : 'Low'}"></div>
+                    <div class="task-priority-indicator ${task.priority}" title="${task.priority} priority"></div>
                 </div>
                 <div class="task-card-body" onclick="toggleComplete(${index})">
                     <p class="task-card-text">${task.text}</p>
@@ -171,7 +177,7 @@ function renderTasks(tasks) {
 function toggleComplete(index) {
     const isNowCompleted = !allTasks[index].completed;
     allTasks[index].completed = isNowCompleted;
-    
+
     if (isNowCompleted) {
         createCelebration();
         showToast('Achievement Unlocked! 🏆', 'success');
@@ -192,9 +198,9 @@ function createCelebration() {
         confetti.style.height = confetti.style.width;
         confetti.style.animationDuration = Math.random() * 2 + 1 + 's';
         confetti.style.opacity = Math.random();
-        
+
         celebrationContainer.appendChild(confetti);
-        
+
         setTimeout(() => confetti.remove(), 3000);
     }
 }
@@ -225,7 +231,7 @@ function setUpUpdate(index) {
     todoInput.value = task.text;
     categorySelector.value = task.category;
     currentPriority = task.priority;
-    
+
     priorityBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.priority === currentPriority);
     });
@@ -243,7 +249,7 @@ function updateElement() {
     allTasks[editingIndex].text = text;
     allTasks[editingIndex].priority = currentPriority;
     allTasks[editingIndex].category = categorySelector.value;
-    
+
     saveTasks();
     resetForm();
     display();
@@ -290,8 +296,8 @@ function updateDate() {
 }
 
 function updateListTitle() {
-    listTitle.innerText = currentFilter === 'all' ? "Infinite Stream" : 
-                         currentFilter === 'active' ? "Active Flow" : "Completed Echoes";
+    listTitle.innerText = currentFilter === 'all' ? "Infinite Stream" :
+        currentFilter === 'active' ? "Active Flow" : "Completed Echoes";
 }
 
 function getCategoryIcon(cat) {
@@ -316,7 +322,7 @@ function updateStats() {
 
     remainingCount.innerText = active;
     miniProgressPercent.innerText = `${percent}%`;
-    
+
     const offset = circumference - (percent / 100) * circumference;
     miniProgressRing.style.strokeDashoffset = offset;
 }

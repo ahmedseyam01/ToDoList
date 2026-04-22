@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>" />
-  
+
   <!-- Google Fonts: Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
+
   <link rel="stylesheet" href="./css/style.css" />
   <title>To-Do List | Premium</title>
 </head>
@@ -34,7 +34,7 @@
         <span class="logo-icon">✨</span>
         <span class="logo-text">FlowList</span>
       </div>
-      
+
       <nav class="nav-menu">
         <button class="nav-item active" data-filter="all">
           <span class="icon">🏠</span> All Tasks
@@ -71,7 +71,7 @@
           <h1 id="greeting">Hello, User!</h1>
           <p class="current-date" id="currentDate">Wednesday, April 22</p>
         </div>
-        
+
         <div class="header-stats">
           <div class="stat-card">
             <span class="stat-value" id="remainingCount">0</span>
@@ -115,10 +115,8 @@
           </div>
         </div>
         
-        <div class="action-wrapper">
-          <button onclick="addTask()" class="btn-add-task" id="addBtn">Add Task</button>
-          <button class="btn-update-task d-none" onclick="updateElement()" id="updateBtn">Update</button>
-        </div>
+        <button onclick="addTask()" class="btn-add-task" id="addBtn">Add Task</button>
+        <button class="btn-update-task d-none" onclick="updateElement()" id="updateBtn">Update</button>
       </section>
 
       <div class="list-controls">
