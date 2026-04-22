@@ -4,36 +4,42 @@ const todoList = document.getElementById('todoList');
 const addBtn = document.getElementById('addBtn');
 const updateBtn = document.getElementById('updateBtn');
 const searchInput = document.getElementById('searchInput');
-const taskStats = document.getElementById('taskStats');
-const priorityBtns = document.querySelectorAll('.priority-btn');
-const filterBtns = document.querySelectorAll('.filter-btn');
+const remainingCount = document.getElementById('remainingCount');
+const miniProgressRing = document.getElementById('miniProgressRing');
+const miniProgressPercent = document.getElementById('miniProgressPercent');
+const greeting = document.getElementById('greeting');
+const currentDate = document.getElementById('currentDate');
+const categorySelector = document.getElementById('categorySelector');
+const priorityBtns = document.querySelectorAll('.p-pill');
+const navItems = document.querySelectorAll('.nav-item');
+const catItems = document.querySelectorAll('.cat-item');
 const themeToggleBtn = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
-const progressBar = document.getElementById('progressBar');
-const progressPercentage = document.getElementById('progressPercentage');
-const progressCircle = document.getElementById('progressCircle');
+const listTitle = document.getElementById('listTitle');
 
-// Progress Circle Config
-const radius = progressCircle.r.baseVal.value;
-const circumference = radius * 2 * Math.PI;
-progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-progressCircle.style.strokeDashoffset = circumference;
+// Progress Ring Config
+const circumference = 16 * 2 * Math.PI; // radius 16
+miniProgressRing.style.strokeDasharray = `${circumference} ${circumference}`;
 
 // State
 let allTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 let currentFilter = 'all';
+let currentCategory = 'all';
 let currentPriority = 'medium';
 let editingIndex = null;
 let isDark = JSON.parse(localStorage.getItem('isDark')) || false;
 
 // Initialize
 function init() {
+    updateGreeting();
+    updateDate();
     applyTheme();
     setupEventListeners();
     display();
 }
 
 function setupEventListeners() {
+    // Priority pills
     priorityBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             priorityBtns.forEach(b => b.classList.remove('active'));
@@ -42,17 +48,37 @@ function setupEventListeners() {
         });
     });
 
-    filterBtns.forEach(btn => {
+    // Navigation filters (All, Active, Completed)
+    navItems.forEach(btn => {
         btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
+            navItems.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentFilter = btn.dataset.filter;
+            updateListTitle();
+            display();
+        });
+    });
+
+    // Category filters (General, Work, Personal, Shopping)
+    catItems.forEach(btn => {
+        btn.addEventListener('click', () => {
+            catItems.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = btn.dataset.category;
             display();
         });
     });
 
     themeToggleBtn.addEventListener('click', toggleTheme);
     searchInput.addEventListener('input', display);
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
 
     todoInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
@@ -64,7 +90,7 @@ function setupEventListeners() {
 function addTask() {
     const text = todoInput.value.trim();
     if (text === "") {
-        showError('Please enter a task name!');
+        showError('What are we planning to do?');
         return;
     }
 
@@ -72,6 +98,7 @@ function addTask() {
         id: Date.now(),
         text: text,
         priority: currentPriority,
+        category: categorySelector.value,
         completed: false,
         createdAt: new Date().getTime()
     };
@@ -80,58 +107,71 @@ function addTask() {
     saveTasks();
     clearInput();
     display();
-    showToast('Task Added!', 'success');
+    showToast('Task launched! 🚀', 'success');
 }
 
 function display() {
     let filteredTasks = allTasks;
 
+    // Apply Status Filter
     if (currentFilter === 'active') {
         filteredTasks = allTasks.filter(t => !t.completed);
     } else if (currentFilter === 'completed') {
         filteredTasks = allTasks.filter(t => t.completed);
     }
 
+    // Apply Category Filter
+    if (currentCategory !== 'all') {
+        filteredTasks = filteredTasks.filter(t => t.category === currentCategory);
+    }
+
+    // Apply Search Filter
     const searchTerm = searchInput.value.toLowerCase();
     if (searchTerm) {
         filteredTasks = filteredTasks.filter(t => 
-            t.text.toLowerCase().includes(searchTerm)
+            t.text.toLowerCase().includes(searchTerm) || 
+            t.category.toLowerCase().includes(searchTerm)
         );
     }
 
-    if (filteredTasks.length === 0) {
+    renderTasks(filteredTasks);
+    updateStats();
+}
+
+function renderTasks(tasks) {
+    if (tasks.length === 0) {
         todoList.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-state-icon">${searchTerm ? '🔍' : '✨'}</span>
-                <p>${searchTerm ? 'No matching tasks found.' : 'Your list is clear. Time to relax!'}</p>
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <span class="empty-state-icon">🔭</span>
+                <p>No tasks found in this orbit.</p>
             </div>
         `;
-    } else {
-        todoList.innerHTML = filteredTasks.map((task) => {
-            const index = allTasks.findIndex(t => t.id === task.id);
-            return `
-                <li class="todo-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                    <div class="todo-left" onclick="toggleComplete(${index})">
-                        <div class="checkbox-custom"></div>
-                        <div class="todo-info">
-                            <span class="todo-text">${task.text}</span>
-                            <div class="todo-meta">
-                                <span class="todo-badge ${task.priority}">${task.priority}</span>
-                                <span class="todo-time">🕒 ${getRelativeTime(task.createdAt)}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="todo-actions">
-                        <button onclick="setUpUpdate(${index})" class="action-btn edit" title="Edit">✏️</button>
-                        <button onclick="deleteElement(${index})" class="action-btn delete" title="Delete">🗑️</button>
-                    </div>
-                </li>
-            `;
-        }).join('');
+        return;
     }
 
-    updateStats();
-    updateProgress();
+    todoList.innerHTML = tasks.map((task) => {
+        const index = allTasks.findIndex(t => t.id === task.id);
+        const categoryIcon = getCategoryIcon(task.category);
+        
+        return `
+            <li class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${tasks.indexOf(task) * 0.05}s">
+                <div class="task-card-header">
+                    <span class="task-category-tag">${categoryIcon} ${task.category}</span>
+                    <div class="task-priority-indicator ${task.priority}" title="${task.priority} priority"></div>
+                </div>
+                <div class="task-card-body" onclick="toggleComplete(${index})">
+                    <p class="task-card-text">${task.text}</p>
+                </div>
+                <div class="task-card-footer">
+                    <span class="task-date">🕒 ${getRelativeTime(task.createdAt)}</span>
+                    <div class="task-actions-mini">
+                        <button onclick="setUpUpdate(${index})" class="btn-mini edit" title="Edit">✏️</button>
+                        <button onclick="deleteElement(${index})" class="btn-mini delete" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            </li>
+        `;
+    }).join('');
 }
 
 function toggleComplete(index) {
@@ -142,21 +182,19 @@ function toggleComplete(index) {
 
 function deleteElement(index) {
     Swal.fire({
-        title: 'Delete task?',
-        text: "This action cannot be undone.",
+        title: 'Archive task?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Delete',
-        background: isDark ? '#1e293b' : '#fff',
+        confirmButtonColor: '#f43f5e',
+        confirmButtonText: 'Yes, remove it',
+        background: isDark ? '#0f172a' : '#fff',
         color: isDark ? '#fff' : '#000'
     }).then((result) => {
         if (result.isConfirmed) {
             allTasks.splice(index, 1);
             saveTasks();
             display();
-            showToast('Deleted', 'info');
+            showToast('Task removed.', 'info');
         }
     });
 }
@@ -164,7 +202,9 @@ function deleteElement(index) {
 function setUpUpdate(index) {
     const task = allTasks[index];
     todoInput.value = task.text;
+    categorySelector.value = task.category;
     currentPriority = task.priority;
+    
     priorityBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.priority === currentPriority);
     });
@@ -173,9 +213,6 @@ function setUpUpdate(index) {
     updateBtn.classList.remove('d-none');
     editingIndex = index;
     todoInput.focus();
-    
-    // Scroll to top to see input
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function updateElement() {
@@ -184,43 +221,84 @@ function updateElement() {
 
     allTasks[editingIndex].text = text;
     allTasks[editingIndex].priority = currentPriority;
+    allTasks[editingIndex].category = categorySelector.value;
     
     saveTasks();
     resetForm();
     display();
-    showToast('Updated!', 'success');
+    showToast('Task updated!', 'success');
 }
 
 function clearAllTasks() {
-    if (allTasks.length === 0) return;
+    const completedTasks = allTasks.filter(t => t.completed);
+    if (completedTasks.length === 0) return;
 
     Swal.fire({
-        title: 'Clear all tasks?',
-        icon: 'warning',
+        title: 'Clear completed?',
+        text: `You're about to remove ${completedTasks.length} tasks.`,
+        icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#ef4444',
+        confirmButtonColor: '#f43f5e',
         confirmButtonText: 'Clear All',
-        background: isDark ? '#1e293b' : '#fff',
+        background: isDark ? '#0f172a' : '#fff',
         color: isDark ? '#fff' : '#000'
     }).then((result) => {
         if (result.isConfirmed) {
-            allTasks = [];
+            allTasks = allTasks.filter(t => !t.completed);
             saveTasks();
             display();
-            showToast('All cleared', 'info');
+            showToast('Cleared!', 'success');
         }
     });
 }
 
 // Helpers
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(allTasks));
+function updateGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) greeting.innerText = "Good morning! 🌅";
+    else if (hour < 18) greeting.innerText = "Good afternoon! ☀️";
+    else greeting.innerText = "Good evening! 🌙";
 }
 
-function clearInput() {
-    todoInput.value = "";
+function updateDate() {
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    currentDate.innerText = new Date().toLocaleDateString('en-US', options);
 }
 
+function updateListTitle() {
+    listTitle.innerText = currentFilter === 'all' ? "All Tasks" : 
+                         currentFilter === 'active' ? "Active Tasks" : "Completed Tasks";
+}
+
+function getCategoryIcon(cat) {
+    const icons = { general: '📁', work: '💼', personal: '👤', shopping: '🛒' };
+    return icons[cat] || '📁';
+}
+
+function getRelativeTime(timestamp) {
+    const diff = new Date().getTime() - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+}
+
+function updateStats() {
+    const active = allTasks.filter(t => !t.completed).length;
+    const total = allTasks.length;
+    const percent = total === 0 ? 0 : Math.round(((total - active) / total) * 100);
+
+    remainingCount.innerText = active;
+    miniProgressPercent.innerText = `${percent}%`;
+    
+    const offset = circumference - (percent / 100) * circumference;
+    miniProgressRing.style.strokeDashoffset = offset;
+}
+
+function saveTasks() { localStorage.setItem('tasks', JSON.stringify(allTasks)); }
+function clearInput() { todoInput.value = ""; }
 function resetForm() {
     clearInput();
     addBtn.classList.remove('d-none');
@@ -228,81 +306,26 @@ function resetForm() {
     editingIndex = null;
 }
 
-function updateStats() {
-    const activeCount = allTasks.filter(t => !t.completed).length;
-    taskStats.innerText = activeCount === 0 
-        ? "You're all done! 🚀" 
-        : `${activeCount} task${activeCount === 1 ? '' : 's'} to go`;
-}
-
-function updateProgress() {
-    if (allTasks.length === 0) {
-        setProgress(0);
-        return;
-    }
-    const completedCount = allTasks.filter(t => t.completed).length;
-    const percentage = Math.round((completedCount / allTasks.length) * 100);
-    setProgress(percentage);
-}
-
-function setProgress(percent) {
-    // Linear bar
-    progressBar.style.width = `${percent}%`;
-    
-    // Circle
-    const offset = circumference - (percent / 100) * circumference;
-    progressCircle.style.strokeDashoffset = offset;
-    
-    // Text
-    progressPercentage.innerText = `${percent}%`;
-}
-
-function getRelativeTime(timestamp) {
-    const now = new Date().getTime();
-    const diff = now - timestamp;
-    
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (seconds < 60) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
-}
-
 function showToast(title, icon) {
     Swal.fire({
-        icon: icon,
-        title: title,
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-        background: isDark ? '#1e293b' : '#fff',
-        color: isDark ? '#fff' : '#000'
+        icon: icon, title: title, toast: true, position: 'top-end',
+        showConfirmButton: false, timer: 2000, timerProgressBar: true,
+        background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fff' : '#000'
     });
 }
 
 function showError(text) {
     Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: text,
-        confirmButtonColor: '#6366f1',
-        background: isDark ? '#1e293b' : '#fff',
-        color: isDark ? '#fff' : '#000'
+        icon: 'error', title: 'Wait...', text: text,
+        confirmButtonColor: '#6366f1', background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fff' : '#000'
     });
 }
 
-// Theme
 function toggleTheme() {
     isDark = !isDark;
     applyTheme();
     localStorage.setItem('isDark', JSON.stringify(isDark));
-    display(); // Refresh to update sweetalert colors
+    display();
 }
 
 function applyTheme() {
@@ -310,5 +333,4 @@ function applyTheme() {
     themeIcon.innerHTML = isDark ? '☀️' : '🌑';
 }
 
-// Run init
 init();

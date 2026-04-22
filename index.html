@@ -23,75 +23,104 @@
     <div class="blob blob-3"></div>
   </div>
 
-  <div class="container">
-    <header class="header">
-      <div class="title-group">
-        <h1>My Tasks</h1>
-        <p class="subtitle" id="taskStats">Stay organized and productive</p>
+  <div class="app-wrapper">
+    <!-- Sidebar / Navigation -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">✨</span>
+        <span class="logo-text">FlowList</span>
       </div>
-      <div class="header-actions">
-        <div class="progress-circle-container">
-          <svg class="progress-ring" width="50" height="50">
-            <circle class="progress-ring__circle-bg" stroke="var(--glass-border)" stroke-width="4" fill="transparent" r="20" cx="25" cy="25"/>
-            <circle class="progress-ring__circle" id="progressCircle" stroke="var(--accent)" stroke-width="4" fill="transparent" r="20" cx="25" cy="25"/>
-          </svg>
-          <span class="progress-text" id="progressPercentage">0%</span>
+      
+      <nav class="nav-menu">
+        <button class="nav-item active" data-filter="all">
+          <span class="icon">🏠</span> All Tasks
+        </button>
+        <button class="nav-item" data-filter="active">
+          <span class="icon">⚡</span> Active
+        </button>
+        <button class="nav-item" data-filter="completed">
+          <span class="icon">✅</span> Completed
+        </button>
+      </nav>
+
+      <div class="categories-section">
+        <h3>Categories</h3>
+        <div class="category-list" id="categoryList">
+          <button class="cat-item active" data-category="all">📁 General</button>
+          <button class="cat-item" data-category="work">💼 Work</button>
+          <button class="cat-item" data-category="personal">👤 Personal</button>
+          <button class="cat-item" data-category="shopping">🛒 Shopping</button>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
-          <span id="themeIcon">🌑</span>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle" id="themeToggle">
+          <span id="themeIcon">🌑</span> Dark Mode
         </button>
       </div>
-    </header>
+    </aside>
 
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="dashboard-header">
+        <div class="welcome-section">
+          <h1 id="greeting">Hello, User!</h1>
+          <p class="current-date" id="currentDate">Wednesday, April 22</p>
+        </div>
+        
+        <div class="header-stats">
+          <div class="stat-card">
+            <span class="stat-value" id="remainingCount">0</span>
+            <span class="stat-label">Tasks Left</span>
+          </div>
+          <div class="progress-box">
+            <div class="progress-ring-mini">
+              <svg width="40" height="40">
+                <circle class="ring-bg" r="16" cx="20" cy="20" />
+                <circle class="ring-fill" id="miniProgressRing" r="16" cx="20" cy="20" />
+              </svg>
+              <span id="miniProgressPercent">0%</span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-    <div class="search-section">
-      <div class="search-box">
+      <div class="search-bar-modern">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Search tasks..." />
-      </div>
-    </div>
-
-    <div class="input-section">
-      <div class="input-group">
-        <input type="text" id="todoInput" placeholder="What needs to be done?" autocomplete="off" />
-        <button onclick="addTask()" class="add-btn" id="addBtn">
-          <span class="btn-text">Add Task</span>
-          <span class="btn-icon">+</span>
-        </button>
-        <button class="update-btn d-none" onclick="updateElement()" id="updateBtn">
-          <span class="btn-text">Update</span>
-          <span class="btn-icon">✓</span>
-        </button>
+        <input type="text" id="searchInput" placeholder="Find anything..." />
+        <kbd class="search-shortcut">⌘K</kbd>
       </div>
 
-      <div class="priority-selector" id="prioritySelector">
-        <button class="priority-btn high" data-priority="high" title="High Priority">
-          <span class="dot"></span> High
-        </button>
-        <button class="priority-btn medium active" data-priority="medium" title="Medium Priority">
-          <span class="dot"></span> Medium
-        </button>
-        <button class="priority-btn low" data-priority="low" title="Low Priority">
-          <span class="dot"></span> Low
-        </button>
-      </div>
-    </div>
+      <section class="task-creation-card">
+        <div class="input-container-modern">
+          <input type="text" id="todoInput" placeholder="Add a new task..." autocomplete="off" />
+          <div class="input-actions-modern">
+            <select id="categorySelector" class="category-select">
+              <option value="general">📁 General</option>
+              <option value="work">💼 Work</option>
+              <option value="personal">👤 Personal</option>
+              <option value="shopping">🛒 Shopping</option>
+            </select>
+            <div class="priority-pills" id="prioritySelector">
+              <button class="p-pill high" data-priority="high" title="High"></button>
+              <button class="p-pill medium active" data-priority="medium" title="Medium"></button>
+              <button class="p-pill low" data-priority="low" title="Low"></button>
+            </div>
+          </div>
+        </div>
+        <button onclick="addTask()" class="btn-primary-modern" id="addBtn">Add Task</button>
+        <button class="btn-secondary-modern d-none" onclick="updateElement()" id="updateBtn">Update</button>
+      </section>
 
-    <div class="filters-section">
-      <div class="filters" id="statusFilters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="active">Active</button>
-        <button class="filter-btn" data-filter="completed">Completed</button>
+      <div class="list-controls">
+        <h2 id="listTitle">All Tasks</h2>
+        <button class="btn-clear" onclick="clearAllTasks()">Clear Completed</button>
       </div>
-      <button class="clear-all-btn" onclick="clearAllTasks()" id="clearAllBtn">Clear All</button>
-    </div>
 
-    <ul class="todo-list" id="todoList">
-      <!-- Tasks will be injected here -->
-    </ul>
+      <ul class="task-grid" id="todoList">
+        <!-- Tasks will be injected here -->
+      </ul>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
