@@ -10,13 +10,15 @@ const miniProgressPercent = document.getElementById('miniProgressPercent');
 const greeting = document.getElementById('greeting');
 const currentDate = document.getElementById('currentDate');
 const categorySelector = document.getElementById('categorySelector');
-const priorityBtns = document.querySelectorAll('.p-pill');
+const priorityBtns = document.querySelectorAll('.dot-btn');
 const navItems = document.querySelectorAll('.nav-item');
 const catItems = document.querySelectorAll('.cat-item');
 const themeToggleBtn = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 const listTitle = document.getElementById('listTitle');
 const celebrationContainer = document.getElementById('celebration-container');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebar = document.querySelector('.sidebar');
 
 // Progress Ring Config
 const circumference = 16 * 2 * Math.PI;
@@ -75,6 +77,12 @@ function setupEventListeners() {
 
     themeToggleBtn.addEventListener('click', toggleTheme);
     searchInput.addEventListener('input', display);
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
 
     document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
