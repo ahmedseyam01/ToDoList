@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>" />
+  
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="./css/style.css" />
+  <title>To-Do List | Premium</title>
+</head>
+
+<body>
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="title-group">
+        <h1>My Tasks</h1>
+        <p class="subtitle" id="taskStats">Stay organized and productive</p>
+      </div>
+      <div class="header-actions">
+        <div class="progress-circle-container">
+          <svg class="progress-ring" width="50" height="50">
+            <circle class="progress-ring__circle-bg" stroke="var(--glass-border)" stroke-width="4" fill="transparent" r="20" cx="25" cy="25"/>
+            <circle class="progress-ring__circle" id="progressCircle" stroke="var(--accent)" stroke-width="4" fill="transparent" r="20" cx="25" cy="25"/>
+          </svg>
+          <span class="progress-text" id="progressPercentage">0%</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+          <span id="themeIcon">🌑</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="search-section">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search tasks..." />
+      </div>
+    </div>
+
+    <div class="input-section">
+      <div class="input-group">
+        <input type="text" id="todoInput" placeholder="What needs to be done?" autocomplete="off" />
+        <button onclick="addTask()" class="add-btn" id="addBtn">
+          <span class="btn-text">Add Task</span>
+          <span class="btn-icon">+</span>
+        </button>
+        <button class="update-btn d-none" onclick="updateElement()" id="updateBtn">
+          <span class="btn-text">Update</span>
+          <span class="btn-icon">✓</span>
+        </button>
+      </div>
+
+      <div class="priority-selector" id="prioritySelector">
+        <button class="priority-btn high" data-priority="high" title="High Priority">
+          <span class="dot"></span> High
+        </button>
+        <button class="priority-btn medium active" data-priority="medium" title="Medium Priority">
+          <span class="dot"></span> Medium
+        </button>
+        <button class="priority-btn low" data-priority="low" title="Low Priority">
+          <span class="dot"></span> Low
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-section">
+      <div class="filters" id="statusFilters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+      <button class="clear-all-btn" onclick="clearAllTasks()" id="clearAllBtn">Clear All</button>
+    </div>
+
+    <ul class="todo-list" id="todoList">
+      <!-- Tasks will be injected here -->
+    </ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="./js/main.js"></script>
+</body>
+
+</html>
