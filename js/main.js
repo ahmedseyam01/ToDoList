@@ -168,6 +168,9 @@ function renderTasks(tasks) {
                     <div class="task-priority-indicator ${task.priority}" title="${task.priority} priority"></div>
                 </div>
                 <div class="task-card-body" onclick="toggleComplete(${index})">
+                    <div class="custom-checkbox ${task.completed ? 'checked' : ''}">
+                        <i class="fas fa-check"></i>
+                    </div>
                     <p class="task-card-text">${task.text}</p>
                 </div>
                 <div class="task-card-footer">
