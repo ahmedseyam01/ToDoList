@@ -10,7 +10,7 @@ const miniProgressPercent = document.getElementById('miniProgressPercent');
 const greeting = document.getElementById('greeting');
 const currentDate = document.getElementById('currentDate');
 const categorySelector = document.getElementById('categorySelector');
-const priorityBtns = document.querySelectorAll('.p-pill');
+const priorityBtns = document.querySelectorAll('.dot-btn');
 const navItems = document.querySelectorAll('.nav-item');
 const catItems = document.querySelectorAll('.cat-item');
 const themeToggleBtn = document.getElementById('themeToggle');
@@ -151,7 +151,7 @@ function renderTasks(tasks) {
             <li class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${i * 0.08}s">
                 <div class="task-card-header">
                     <span class="task-category-tag">${categoryIcon} ${task.category}</span>
-                    <div class="task-priority-indicator ${task.priority}" title="${task.priority} priority"></div>
+                    <div class="task-priority-indicator ${task.priority}" title="${task.priority === 'high' ? 'Hard' : task.priority === 'medium' ? 'Medium' : 'Low'}"></div>
                 </div>
                 <div class="task-card-body" onclick="toggleComplete(${index})">
                     <p class="task-card-text">${task.text}</p>
