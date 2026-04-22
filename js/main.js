@@ -16,9 +16,10 @@ const catItems = document.querySelectorAll('.cat-item');
 const themeToggleBtn = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 const listTitle = document.getElementById('listTitle');
+const celebrationContainer = document.getElementById('celebration-container');
 
 // Progress Ring Config
-const circumference = 16 * 2 * Math.PI; // radius 16
+const circumference = 16 * 2 * Math.PI;
 miniProgressRing.style.strokeDasharray = `${circumference} ${circumference}`;
 
 // State
@@ -27,7 +28,7 @@ let currentFilter = 'all';
 let currentCategory = 'all';
 let currentPriority = 'medium';
 let editingIndex = null;
-let isDark = JSON.parse(localStorage.getItem('isDark')) || false;
+let isDark = JSON.parse(localStorage.getItem('isDark')) !== null ? JSON.parse(localStorage.getItem('isDark')) : true; // Default to dark for aesthetic
 
 // Initialize
 function init() {
@@ -39,7 +40,6 @@ function init() {
 }
 
 function setupEventListeners() {
-    // Priority pills
     priorityBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             priorityBtns.forEach(b => b.classList.remove('active'));
@@ -48,7 +48,6 @@ function setupEventListeners() {
         });
     });
 
-    // Navigation filters (All, Active, Completed)
     navItems.forEach(btn => {
         btn.addEventListener('click', () => {
             navItems.forEach(b => b.classList.remove('active'));
@@ -59,7 +58,6 @@ function setupEventListeners() {
         });
     });
 
-    // Category filters (General, Work, Personal, Shopping)
     catItems.forEach(btn => {
         btn.addEventListener('click', () => {
             catItems.forEach(b => b.classList.remove('active'));
@@ -72,7 +70,6 @@ function setupEventListeners() {
     themeToggleBtn.addEventListener('click', toggleTheme);
     searchInput.addEventListener('input', display);
 
-    // Keyboard Shortcuts
     document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             e.preventDefault();
@@ -90,7 +87,7 @@ function setupEventListeners() {
 function addTask() {
     const text = todoInput.value.trim();
     if (text === "") {
-        showError('What are we planning to do?');
+        showError('The canvas is empty. What shall we create?');
         return;
     }
 
@@ -107,25 +104,22 @@ function addTask() {
     saveTasks();
     clearInput();
     display();
-    showToast('Task launched! 🚀', 'success');
+    showToast('Manifested! ✨', 'success');
 }
 
 function display() {
     let filteredTasks = allTasks;
 
-    // Apply Status Filter
     if (currentFilter === 'active') {
         filteredTasks = allTasks.filter(t => !t.completed);
     } else if (currentFilter === 'completed') {
         filteredTasks = allTasks.filter(t => t.completed);
     }
 
-    // Apply Category Filter
     if (currentCategory !== 'all') {
         filteredTasks = filteredTasks.filter(t => t.category === currentCategory);
     }
 
-    // Apply Search Filter
     const searchTerm = searchInput.value.toLowerCase();
     if (searchTerm) {
         filteredTasks = filteredTasks.filter(t => 
@@ -142,19 +136,19 @@ function renderTasks(tasks) {
     if (tasks.length === 0) {
         todoList.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1;">
-                <span class="empty-state-icon">🔭</span>
-                <p>No tasks found in this orbit.</p>
+                <span class="empty-state-icon">🪐</span>
+                <p>The universe is calm. No tasks in sight.</p>
             </div>
         `;
         return;
     }
 
-    todoList.innerHTML = tasks.map((task) => {
+    todoList.innerHTML = tasks.map((task, i) => {
         const index = allTasks.findIndex(t => t.id === task.id);
         const categoryIcon = getCategoryIcon(task.category);
         
         return `
-            <li class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${tasks.indexOf(task) * 0.05}s">
+            <li class="task-card ${task.completed ? 'completed' : ''}" style="animation-delay: ${i * 0.08}s">
                 <div class="task-card-header">
                     <span class="task-category-tag">${categoryIcon} ${task.category}</span>
                     <div class="task-priority-indicator ${task.priority}" title="${task.priority} priority"></div>
@@ -175,26 +169,53 @@ function renderTasks(tasks) {
 }
 
 function toggleComplete(index) {
-    allTasks[index].completed = !allTasks[index].completed;
+    const isNowCompleted = !allTasks[index].completed;
+    allTasks[index].completed = isNowCompleted;
+    
+    if (isNowCompleted) {
+        createCelebration();
+        showToast('Achievement Unlocked! 🏆', 'success');
+    }
+
     saveTasks();
     display();
 }
 
+function createCelebration() {
+    const colors = ['#6366f1', '#a855f7', '#ec4899', '#10b981', '#f59e0b'];
+    for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = confetti.style.width;
+        confetti.style.animationDuration = Math.random() * 2 + 1 + 's';
+        confetti.style.opacity = Math.random();
+        
+        celebrationContainer.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
 function deleteElement(index) {
     Swal.fire({
-        title: 'Archive task?',
+        title: 'Dissolve task?',
+        text: "This thought will vanish into the void.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#f43f5e',
-        confirmButtonText: 'Yes, remove it',
-        background: isDark ? '#0f172a' : '#fff',
-        color: isDark ? '#fff' : '#000'
+        confirmButtonColor: '#ff4d4d',
+        confirmButtonText: 'Dissolve',
+        background: isDark ? 'rgba(15, 17, 30, 0.9)' : '#fff',
+        color: isDark ? '#fff' : '#000',
+        backdrop: `rgba(0,0,0,0.4) blur(10px)`
     }).then((result) => {
         if (result.isConfirmed) {
             allTasks.splice(index, 1);
             saveTasks();
             display();
-            showToast('Task removed.', 'info');
+            showToast('Gone. 💨', 'info');
         }
     });
 }
@@ -226,7 +247,7 @@ function updateElement() {
     saveTasks();
     resetForm();
     display();
-    showToast('Task updated!', 'success');
+    showToast('Refined! 💎', 'success');
 }
 
 function clearAllTasks() {
@@ -234,20 +255,21 @@ function clearAllTasks() {
     if (completedTasks.length === 0) return;
 
     Swal.fire({
-        title: 'Clear completed?',
-        text: `You're about to remove ${completedTasks.length} tasks.`,
+        title: 'Purge completed?',
+        text: `Clearing ${completedTasks.length} finished cycles.`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#f43f5e',
-        confirmButtonText: 'Clear All',
-        background: isDark ? '#0f172a' : '#fff',
-        color: isDark ? '#fff' : '#000'
+        confirmButtonColor: '#ff4d4d',
+        confirmButtonText: 'Purge',
+        background: isDark ? 'rgba(15, 17, 30, 0.9)' : '#fff',
+        color: isDark ? '#fff' : '#000',
+        backdrop: `rgba(0,0,0,0.4) blur(10px)`
     }).then((result) => {
         if (result.isConfirmed) {
             allTasks = allTasks.filter(t => !t.completed);
             saveTasks();
             display();
-            showToast('Cleared!', 'success');
+            showToast('Purged! 🔥', 'success');
         }
     });
 }
@@ -255,9 +277,11 @@ function clearAllTasks() {
 // Helpers
 function updateGreeting() {
     const hour = new Date().getHours();
-    if (hour < 12) greeting.innerText = "Good morning! 🌅";
-    else if (hour < 18) greeting.innerText = "Good afternoon! ☀️";
-    else greeting.innerText = "Good evening! 🌙";
+    let text = "";
+    if (hour < 12) text = "Good morning, Dreamer 🌅";
+    else if (hour < 18) text = "Good afternoon, Creator ☀️";
+    else text = "Good evening, Visionary 🌙";
+    greeting.innerText = text;
 }
 
 function updateDate() {
@@ -266,8 +290,8 @@ function updateDate() {
 }
 
 function updateListTitle() {
-    listTitle.innerText = currentFilter === 'all' ? "All Tasks" : 
-                         currentFilter === 'active' ? "Active Tasks" : "Completed Tasks";
+    listTitle.innerText = currentFilter === 'all' ? "Infinite Stream" : 
+                         currentFilter === 'active' ? "Active Flow" : "Completed Echoes";
 }
 
 function getCategoryIcon(cat) {
@@ -310,14 +334,14 @@ function showToast(title, icon) {
     Swal.fire({
         icon: icon, title: title, toast: true, position: 'top-end',
         showConfirmButton: false, timer: 2000, timerProgressBar: true,
-        background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fff' : '#000'
+        background: isDark ? 'rgba(15, 17, 30, 0.9)' : '#fff', color: isDark ? '#fff' : '#000'
     });
 }
 
 function showError(text) {
     Swal.fire({
         icon: 'error', title: 'Wait...', text: text,
-        confirmButtonColor: '#6366f1', background: isDark ? '#1e293b' : '#fff', color: isDark ? '#fff' : '#000'
+        confirmButtonColor: '#6366f1', background: isDark ? 'rgba(15, 17, 30, 0.9)' : '#fff', color: isDark ? '#fff' : '#000'
     });
 }
 
